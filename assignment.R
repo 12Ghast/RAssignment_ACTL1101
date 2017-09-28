@@ -10,7 +10,8 @@
 	#Working Directory (effective)
 	setwd("C:/Users/Local Admin/Documents/RStudio Projects/")
 	
-	
+	#Clear Environment
+	rm(list=ls())
 
 
 	######################################
@@ -198,13 +199,9 @@
 	  plot_temp<-cbind.data.frame(data_merged[,index_x],data_merged[,index_y])
 	  #Get rid of null values
 	  plot_temp<-plot_temp[-which(plot_temp[,1]=="-"),] #Removes rows with '-'
-	  rownames(plot_temp)<-NULL #Removes any empty 'NA' Rows that may have appeared with previous row removal
 	  plot_temp<-plot_temp[-which(plot_temp[,2]=="-"),] #Removes rows with '-'
-	  rownames(plot_temp)<-NULL #Removes any empty 'NA' Rows that may have appeared with previous row removal
 	  plot_temp<-plot_temp[!is.na(as.numeric(plot_temp[,2])),] #Removes rows with values that are non-convertible to numerical values 
-	  rownames(plot_temp)<-NULL #Removes any empty 'NA' Rows that may have appeared with previous row removal
 	  plot_temp<-plot_temp[!is.na(as.numeric(plot_temp[,1])),] #Removes rows with values that are non-convertible to numerical values 
-	  rownames(plot_temp)<-NULL #Removes any empty 'NA' Rows that may have appeared with previous row removal
 	  #Convert to continuous - if you leave out these lines, graph becomes a mess of discrete points
 	  plot_temp[,1] <- as.numeric(as.vector(plot_temp[,1]))
 	  plot_temp[,2] <- as.numeric(as.vector(plot_temp[,2]))
@@ -248,11 +245,22 @@
 
 
 
+	
+
+	plot_scatter("Abo_TorIsl", "BaD_4", TRUE, labelx="Indigenous Proportion of Population (%)",labely="Standard Death Rate", labeltitle="Indigenous Population Proportion against the Standard Death Rate")
+	plot_scatter("Abo_TorIsl","AtIaH_1", TRUE, labelx="Indigenous Proportion of Population (%)", labely="Access to Broadband Internet (%)", labeltitle="Indigenous Populations and their access to internet")
+	plot_scatter("AtIaH_1","BaD_4", TRUE, labelx="Access to Broadband Internet (%)", labely="Standard Death Rate", labeltitle="Correlation between access to internet and mortality rates")
+	plot_scatter("SGPaA_6","BaD_3", TRUE, labelx="Disability Pensions (no.)", labely="Number of Deaths (no.)", labeltitle="Death Rate against number of Disability Pensions")
+
 	#Education and mortality
-	asd <-cbind(data_merged[,"PwPSQ_2"],data_merged[,"PwPSQ_3"],data_merged[,"PwPSQ_4"],data_merged[,"PwPSQ_5"],data_merged[,"PwPSQ_6"])
-	asd <- matrix(as.numeric(unlist(asd)),nrow=nrow(asd))
-	test <- rowSums(asd)
-	plot1<-data_AboTorIsl_BaD4<-cbind.data.frame(test,data_merged[,'BaD_4'])
+	#Combine all education columns
+	plot1_temp <-cbind(data_merged[,"PwPSQ_2"],data_merged[,"PwPSQ_3"],data_merged[,"PwPSQ_4"],data_merged[,"PwPSQ_5"],data_merged[,"PwPSQ_6"])
+	#Convert to numeric
+	plot1_temp <- matrix(as.numeric(unlist(plot1_temp)),nrow=nrow(plot1_temp))
+	#Sum education columns
+	plot1_data1 <- rowSums(plot1_temp)
+	#Merge columns that we are comparing
+	plot1<-cbind.data.frame(plot1_data1,data_merged[,'BaD_4'])
 	#Get rid of null values
 	plot1<-plot1[!is.na(plot1[,1]),] #Removes NA values
 	plot1<-plot1[-which(plot1[,2]=="-"),] #Removes rows with '-'
@@ -264,23 +272,22 @@
 	#Graph the line
 	ggplot(data=plot1,aes(x=plot1[,1],y=plot1[,2]))+geom_point()+geom_abline(intercept = as.numeric(temp)[1], slope = as.numeric(temp)[2],colour='#FF0000')+scale_y_continuous(name="Standard Death Rate",breaks=seq(0,16,2),limits=c(0,16))+scale_x_continuous(name="Population Percentage with Post School Qualifications")+ggtitle("Education and Mortality")+geom_smooth(span=0.25)
 	ggsave(paste(as.numeric(as.POSIXct(Sys.time())),'.png',sep=''))
-
-	plot_scatter("Abo_TorIsl", "BaD_4", TRUE, labelx="Indigenous Proportion of Population (%)",labely="Standard Death Rate", labeltitle="Indigenous Population Proportion against the Standard Death Rate")
-	plot_scatter("Abo_TorIsl","AtIaH_1", TRUE, labelx="Indigenous Proportion of Population (%)", labely="Access to Broadband Internet (%)", labeltitle="Indigenous Populations and their access to internet")
-	plot_scatter("AtIaH_1","BaD_4", TRUE, labelx="Access to Broadband Internet (%)", labely="Standard Death Rate", labeltitle="Correlation between access to internet and mortality rates")
 	
-	qwe <- data_money[which(data_money[,"Year"]==2013),]
-	qwer <- data_pp[which(data_pp[,"Year"]==2011),]
-	data_merged_temp5 <- merge(y=qwe,x=qwer,by=c("Code","Label"), all.x = TRUE,all.Y=TRUE)
-	plot3<-cbind.data.frame(data_merged_temp5[,"Abo_TorIsl"],data_merged_temp5[,"EoPI_16"])
+	#Indigenous Australians against Median Income
+	plot2_data1 <- data_money[which(data_money[,"Year"]==2013),]
+	plot2_data2 <- data_pp[which(data_pp[,"Year"]==2011),]
+	#Merge columns that we are comparing
+	data_merged_plot2 <- merge(y=plot2_data1,x=plot2_data2,by=c("Code","Label"), all.x = TRUE,all.Y=TRUE)
+	#Basically nothing happens, but just changing variable name so that it is more consistent with previous code
+	plot2<-cbind.data.frame(data_merged_plot2[,"Abo_TorIsl"],data_merged_plot2[,"EoPI_16"])
 	#Get rid of null values
-	plot3<-plot3[!is.na(plot3[,1]),] #Removes NA values
-	plot3<-plot3[-which(plot3[,2]=="-"),] #Removes rows with '-'
+	plot2<-plot2[!is.na(plot2[,1]),] #Removes NA values
+	plot2<-plot2[-which(plot2[,2]=="-"),] #Removes rows with '-'
 	#Convert to continuous - if you leave out these lines, graph becomes a mess of discrete points
-	plot3[,1] <- as.numeric(as.vector(plot3[,1]))
-	plot3[,2] <- as.numeric(as.vector(plot3[,2]))
+	plot2[,1] <- as.numeric(as.vector(plot2[,1]))
+	plot2[,2] <- as.numeric(as.vector(plot2[,2]))
 	#Regression line - "line of best fit"; finding the intercept and gradient
-	temp<-coef(lm(plot3[,2] ~ plot3[,1]))
+	temp<-coef(lm(plot2[,2] ~ plot2[,1]))
 	#Graph the line
-	ggplot(data=plot3,aes(x=plot3[,1],y=plot3[,2]))+geom_point()+geom_abline(intercept = as.numeric(temp)[1], slope = as.numeric(temp)[2],colour='#FF0000')+scale_y_continuous(name="Median Income in 2013 ($)")+scale_x_continuous(name="Aboriginal and Torres Strait Islander Percentage of Population in 2011 (%)")+ggtitle("Population of Indigenous Australians against Median Income")+geom_smooth(span=0.25)
+	ggplot(data=plot2,aes(x=plot2[,1],y=plot2[,2]))+geom_point()+geom_abline(intercept = as.numeric(temp)[1], slope = as.numeric(temp)[2],colour='#FF0000')+scale_y_continuous(name="Median Income in 2013 ($)")+scale_x_continuous(name="Aboriginal and Torres Strait Islander Percentage of Population in 2011 (%)")+ggtitle("Population of Indigenous Australians against Median Income")+geom_smooth(span=0.25)
 	ggsave(paste(as.numeric(as.POSIXct(Sys.time())),'.png',sep=''))
