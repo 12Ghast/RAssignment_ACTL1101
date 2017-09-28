@@ -8,7 +8,7 @@
 	#install.packages("ggplot2") #graphing
 
 	#Working Directory (effective)
-	wdir="C:/Users/Local Admin/Documents/RStudio Projects/"
+	setwd("C:/Users/Local Admin/Documents/RStudio Projects/")
 	
 	
 
@@ -155,7 +155,7 @@
 							"Protected Areas_All Other Protected Areas (%)","Protected Areas_Total (%)","Solar Installations_Small-Scale Solar Panel System Installations (no.)","Solar Installations_Solar Water Heater Installations (no.)"))
 
 	#Read in first excel sheet on People and Population
-	data_pp <- read_excel(paste(wdir,"14100DS0002_2017-03.xlsx",sep=''), 
+	data_pp <- read_excel("14100DS0002_2017-03.xlsx", 
 												   sheet = 1,
 												   col_names=TRUE,
 												   skip=8) #Header on row 9, data starts row 10
@@ -164,7 +164,7 @@
 	names(data_pp) <- legend_table[1:92,1]
 
 	#Read in second excel sheet on economy and industry
-	data_ei <- read_excel(paste(wdir,"14100DS0004_2017-03.xlsx",sep=''), 
+	data_ei <- read_excel("14100DS0004_2017-03.xlsx", 
 												   sheet = 1,
 												   col_names=TRUE,
 												   skip=7) #Header on row 8, data starts row 9
@@ -173,7 +173,7 @@
 	names(data_ei) <- legend_table[c(1:3,93:182),1]
 
 	#Read in third excel sheet on income
-	data_money <- read_excel(paste(wdir,"14100DS0006_2017-03.xlsx",sep=''), 
+	data_money <- read_excel("14100DS0006_2017-03.xlsx", 
 												   sheet = 1,
 												   col_names=TRUE,
 												   skip=7) #Header on row 8, data starts row 9
@@ -182,7 +182,7 @@
 	names(data_money) <- legend_table[c(1:3,183:242),1]
 
 	#Read in third excel sheet on income
-	data_fcle <- read_excel(paste(wdir,"14100DS0008_2017-03.xlsx",sep=''), 
+	data_fcle <- read_excel("14100DS0008_2017-03.xlsx", 
 												   sheet = 1,
 												   col_names=TRUE,
 												   skip=7) #Header on row 8, data starts row 9
@@ -264,25 +264,10 @@
 	#Graph the line
 	ggplot(data=plot1,aes(x=plot1[,1],y=plot1[,2]))+geom_point()+geom_abline(intercept = as.numeric(temp)[1], slope = as.numeric(temp)[2],colour='#FF0000')+scale_y_continuous(name="Standard Death Rate",breaks=seq(0,16,2),limits=c(0,16))+scale_x_continuous(name="Population Percentage with Post School Qualifications")+ggtitle("Education and Mortality")+geom_smooth(span=0.25)
 	ggsave(paste(as.numeric(as.POSIXct(Sys.time())),'.png',sep=''))
-	
-	sdf <- data.matrix(data_merged[,"SGPaA_6"])/data.matrix(data_merged[,'ERP_P_N_19'])
-	#Get rid of null values
-	plot2<-plot2[!is.na(plot2[,1]),] #Removes NA values
-	plot2<-plot2[-which(plot2[,2]=="-"),] #Removes rows with '-'
-	#Convert to continuous - if you leave out these lines, graph becomes a mess of discrete points
-	plot2[,1] <- as.numeric(as.vector(plot2[,1]))
-	plot2[,2] <- as.numeric(as.vector(plot2[,2]))
-	#Regression line - "line of best fit"; finding the intercept and gradient
-	temp<-coef(lm(plot2[,2] ~ plot2[,1]))
-	#Graph the line
-	ggplot(data=plot2,aes(x=plot2[,1],y=plot2[,2]))+geom_point()+geom_abline(intercept = as.numeric(temp)[1], slope = as.numeric(temp)[2],colour='#FF0000')+scale_y_continuous(name="Standard Death Rate",breaks=seq(0,16,2),limits=c(0,16))+scale_x_continuous(name="Population Percentage with Post School Qualifications")+ggtitle("Education and Mortality")+geom_smooth(span=0.25)
-	ggsave(paste(as.numeric(as.POSIXct(Sys.time())),'.png',sep=''))
 
-	plot_scatter("Abo_TorIsl", "BaD_4", TRUE)
-	plot_scatter("PA_15","BaD_4", TRUE)
-	plot_scatter("SGPaA_6","BaD_3", TRUE)
-	plot_scatter("ERP_P_N_19","BaD_3", TRUE)
-	plot_scatter("Abo_TorIsl","AtIaH_1", TRUE)
+	plot_scatter("Abo_TorIsl", "BaD_4", TRUE, labelx="Indigenous Proportion of Population (%)",labely="Standard Death Rate", labeltitle="Indigenous Population Proportion against the Standard Death Rate")
+	plot_scatter("Abo_TorIsl","AtIaH_1", TRUE, labelx="Indigenous Proportion of Population (%)", labely="Access to Broadband Internet (%)", labeltitle="Indigenous Populations and their access to internet")
+	plot_scatter("AtIaH_1","BaD_4", TRUE, labelx="Access to Broadband Internet (%)", labely="Standard Death Rate", labeltitle="Correlation between access to internet and mortality rates")
 	
 	qwe <- data_money[which(data_money[,"Year"]==2013),]
 	qwer <- data_pp[which(data_pp[,"Year"]==2011),]
